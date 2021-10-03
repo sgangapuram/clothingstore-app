@@ -13,9 +13,8 @@ const ProductListing = () => {
     //     return 4;
     // });
 
-    const [state, setState] = useState({count:4, theme:'orange'});
-    const count = state.count;
-    const theme = state.theme;
+    const [count, setCount] = useState(4);
+    const [theme, setTheme] = useState('orange');
 
     console.log("%%%%%%%%***products before making axios API call***%%%%%%%%"+products)
     console.log('**********----------default state from app component called----**********');
@@ -39,12 +38,14 @@ const ProductListing = () => {
     //understanding the state update with taking prev state and merging it(...prevState) with specific new fields update
     function incrementCount() {
         console.log('happy coding');
-        setState((prevState)=> {return {...prevState, count:count+1, theme: 'counterGreen'}});
+        setCount((prevCount)=> prevCount+1);
+        setTheme('Green');
     }
 
     function decrementCountBy2() {
         console.log('happy world');
-     setState((prevState => { return {...prevState, count: count-1, theme: 'counterRed'}}));
+        setCount((prevCount)=> prevCount-1);
+        setTheme('Red');
     }
 
     return (

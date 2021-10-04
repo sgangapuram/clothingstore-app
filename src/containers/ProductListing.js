@@ -3,6 +3,8 @@ import {useDispatch, useSelector} from "react-redux";
 import ProductComponent from "./ProductComponent";
 import axios from "axios";
 import {setProducts} from "../actions/productactions";
+import PokemonList from "./PokemanList";
+import Pagination from "./Pagination";
 
 const ProductListing = () => {
     const products = useSelector((state) => state.allProducts.products);
@@ -15,7 +17,13 @@ const ProductListing = () => {
 
     const count = state.count;
     const theme = state.theme;
-    const pokemon = state.pokemon;
+
+    const [pokemon, setPokemon] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const [currentPageUrl, setCurrentPageUrl] = useState("https://pokeapi.co/api/v2/pokemon");
+    const [prevPageUrl, setPrevPageUrl] = useState();
+    const [nextPageUrl, setNextPageUrl] = useState();
 
     console.log("%%%%%%%%***products before making axios API call***%%%%%%%%"+products)
     console.log('**********----------default state from app component called----**********');
@@ -31,9 +39,29 @@ const ProductListing = () => {
         dispatch(setProducts(response.data));
     }
 
+    const fetchPokemons = () => {
+        return axios.get(currentPageUrl).then(resp => {
+            setPrevPageUrl(resp.data.next);
+            setNextPageUrl(resp.data.previous);
+            setPokemon(resp.data.results.map(p => p.name));
+            setLoading(false);
+        })
+    };
+
+
     useEffect(()=>{
+        setLoading(true);
         fetchProducts();
     }, []);
+
+    useEffect(()=>{
+        setLoading(true);
+        fetchPokemons();
+        return ()=>{
+
+        }
+    }, [currentPageUrl]); //this is key to get the next and prev pages as the currenturl changes then only this useEffect will be called
+
 
     console.log("products: ", products);
     //understanding the state update with taking prev state and merging it(...prevState) with specific new fields update
@@ -46,20 +74,34 @@ const ProductListing = () => {
     }
 
 
+    function gotoNextPage() {
+        setCurrentPageUrl(nextPageUrl);
+    }
+
+    function gotoPrevPage() {
+        setCurrentPageUrl(prevPageUrl);
+    }
+    if(loading) return 'Loading....';
     return (
        <>
+           <div>
+               <PokemonList pokemon={pokemon}/>
+               <Pagination
+                   gotoNextPage ={nextPageUrl? gotoNextPage: null}
+                   gotoPrevPage ={prevPageUrl? gotoPrevPage: null}
+                   />
+           </div>
            <div className="ui grid container">
-            <ProductComponent />
+            {/*<ProductComponent />*/}
             <button onClick={incrementCount}>+</button>
             <div><h2>{count}</h2></div>
-               <div>{pokemon}</div>
             <button onClick={decrementCountBy2}>-</button><br/>
-               <span><h1>Total number of products: {products.length}</h1></span>
-               <span><h1>Pokemons total: {pokemon}</h1></span>
+            <span><h1>Total number of products: {products.length}</h1></span>
+               <h1>{pokemon.length-1}</h1>
            </div>
            <h2>{theme}</h2>
        </>
     )
-}
+};
 
 export default ProductListing;
